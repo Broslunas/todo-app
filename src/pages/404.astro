@@ -1,0 +1,23 @@
+---
+export const prerender = false;
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout title="Página no encontrada" description="Lo sentimos, la página que buscas no existe." >
+  <div class="error-container">
+    <h1>Error 404</h1>
+    <p>Lo sentimos, la página que buscas no existe.</p>
+    <button onclick="window.location.href='/'">Volver al inicio</button>
+  </div>
+  <style>
+    body {
+      align-items: center;
+      text-align: center;
+    }
+    .error-container {
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }    
+  </style>
+</Layout>
