@@ -1,0 +1,92 @@
+---
+// filepath: c:\Users\pablo\Workspace\todo-app\src\pages\auth\login.astro
+export const prerender = false;
+import Layout from "@/layouts/Layout.astro";
+import '@/styles/forms.css';
+
+const MONGO_URI = import.meta.env.MONGO_URI || '';
+if (!MONGO_URI) {
+  throw new Error('MONGO_URI is not defined in the environment variables.');
+}
+
+// Check if the user is already logged in
+const cookies = Astro.request.headers.get('cookie') || '';
+const isLoggedIn = cookies.includes('loggedIn=true');
+if (isLoggedIn) {
+  return Astro.redirect('/');
+}
+---
+<Layout title="Iniciar Sesión" description="Inicia sesión para acceder a tu cuenta" >
+  <div class="container">
+    <div class="form-container">
+      <form id="loginForm" method="POST">
+        <h2>Iniciar Sesión</h2>
+        <div id="errorMessage" class="error" style=""></div>
+        <div class="input-group">
+          <span class="icon"><i class="fas fa-user"></i></span>
+          <input name="username" type="text" placeholder="Usuario" required />
+        </div>
+        <div class="input-group">
+          <span class="icon"><i class="fas fa-lock"></i></span>
+          <input name="password" type="password" placeholder="Contraseña" required />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+    <div class="divider"></div>
+    <div class="info-container">
+      <h2>¿Nuevo por aquí?</h2>
+      <p>Regístrate para acceder a todas las funcionalidades.</p>
+      <button onclick="window.location.href='/auth/register/'">Registro</button>
+    </div>
+  </div>
+  <script>
+    async function handleLogin(event: SubmitEvent) {
+      event.preventDefault();
+      const formData = new FormData(event.target as HTMLFormElement);
+      const user = {
+        username: formData.get("username"),
+        password: formData.get("password"),
+      };
+
+      const errorMessage = document.getElementById("errorMessage");
+      if (errorMessage) errorMessage.style.display = "none";
+
+      try {
+        const response = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(user),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          document.cookie = `loggedIn=true; path=/;`;
+          document.cookie = `username=${data.username}; path=/;`;
+          window.location.href = "/";
+        } else {
+          const errorData = await response.json();
+          if (errorMessage) {
+            errorMessage.textContent = errorData.response || "Invalid username or password.";
+            errorMessage.style.display = "block";
+            errorMessage.classList.add("error");
+          }
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        if (errorMessage) {
+          errorMessage.textContent = "Failed to login.";
+          errorMessage.style.display = "block";
+          errorMessage.classList.add("error");
+        }
+      }
+    }
+
+    const loginForm = document.getElementById("loginForm");
+    if (loginForm) {
+      loginForm.addEventListener("submit", handleLogin);
+    } else {
+      console.error("Login form not found.");
+    }
+  </script>
+</Layout>

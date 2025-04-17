@@ -1,0 +1,100 @@
+---
+export const prerender = false;
+
+import Layout from '@/layouts/Layout.astro';
+import { config } from 'dotenv';
+
+import '@/styles/forms.css'
+
+config();
+
+const MONGO_URI = import.meta.env.MONGO_URI || '';
+if (!MONGO_URI) {
+  throw new Error('MONGO_URI is not defined in the environment variables.');
+}
+
+const cookies = Astro.request.headers.get('cookie') || '';
+const isLoggedIn = cookies.includes('loggedIn=true');
+if (isLoggedIn) {
+  return Astro.redirect('/');
+}
+---
+<Layout title="Regístrate" description="Crea una cuenta en Broslunas Chat para interactuar con inteligencia artificial." >
+  <div class="container">
+    <div class="info-container">
+      <h2>¿Ya tienes cuenta?</h2>
+      <p>Inicia sesión para continuar.</p>
+      <button onclick="window.location.href='/auth/login/'">Iniciar Sesión</button>
+    </div>
+    <div class="divider"></div>
+    <div class="form-container">
+      <form id="registerForm" method="POST">
+        <h2>Registro</h2>
+        <div id="errorMessage" class="error"></div>
+        <div class="input-group">
+          <span class="icon"><i class="fas fa-user"></i></span>
+          <input name="username" type="text" placeholder="Usuario" required />
+        </div>
+        <div class="input-group">
+          <span class="icon"><i class="fas fa-envelope"></i></span>
+          <input name="email" type="email" placeholder="Email" required />
+        </div>
+        <div class="input-group">
+          <span class="icon"><i class="fas fa-lock"></i></span>
+          <input name="password" type="password" placeholder="Contraseña" required />
+        </div>
+        <button type="submit">Registrate</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    async function handleRegister(event: SubmitEvent) {
+      event.preventDefault();
+      const formData = new FormData(event.target as HTMLFormElement);
+      const user = {
+        username: formData.get('username'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+      };
+
+      const errorMessage = document.getElementById("errorMessage");
+      if (errorMessage) errorMessage.style.display = "none";
+
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(user),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          document.cookie = `loggedIn=true; path=/;`;
+          document.cookie = `username=${data.username}; path=/;`;
+          window.location.href = "/";
+        } else {
+          const errorData = await response.json();
+          if (errorMessage) {
+            errorMessage.textContent = errorData.response || "Failed to register user.";
+            errorMessage.style.display = "block";
+            errorMessage.classList.add("error");
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        if (errorMessage) {
+          errorMessage.textContent = "Failed to register user.";
+          errorMessage.style.display = "block";
+          errorMessage.classList.add("error");
+        }
+      }
+    }
+
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+      registerForm.addEventListener('submit', handleRegister);
+    } else {
+      console.error("Register form not found.");
+    }
+  </script>
+</Layout>
