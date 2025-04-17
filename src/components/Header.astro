@@ -1,0 +1,35 @@
+---
+import "@/styles/global.css";
+const title = Astro.props.title || "Broslunas TODO";
+
+const menu = [
+	{
+		link: '/login/',
+		label: 'Login',
+	},
+	{
+		link: '/register/',
+		label: 'Registro',
+	},
+	{
+		link: '/stats/',
+		label: 'Estadísticas',
+	}]
+---
+<header>
+    <div class="header-container">
+        <a class="header-link" href="/">
+            <h1 class="header-title">{title}</h1>
+        </a>
+    </div>
+    <div class='menu-container'>
+				<div class='menu'>
+					{menu
+						.map((item) => (
+							<div class='menu-item'>
+								<a href={item.link}>{item.label}</a>
+							</div>
+						))}
+				</div>
+			</div>
+</header>

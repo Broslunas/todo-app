@@ -1,0 +1,95 @@
+@import url("https://fonts.googleapis.com/css2?family=Poetsen+One&display=swap");
+
+:root {
+  --primary-color: #2ecc71;
+  --secondary-color: #27ae60;
+  --background-color: #00150d;
+  --text-color: #deffe4;
+  --border-color: #b2d8b2;
+  --error-color: #a93226;
+  --warning-color: #d4ac0d;
+  --success-color: #1e8449;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-family: "Poetsen One", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+p,
+a {
+  font-family: "Poetsen One", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+/* -------------------------- HEADER  -------------------------- */
+.header-container {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  padding-left: 20px;
+  background-color: #051a00;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.header-title {
+  display: inline-block;
+  font-size: 2.5em;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.header-title:hover {
+  color: var(--secondary-color);
+  transition: color 0.3s ease;
+}
+
+.menu-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: auto;
+  max-width: 100%;
+  padding: 12px;
+  z-index: 999;
+}
+
+.menu {
+  display: flex;
+  padding: 8px;
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+  border: 1px solid rgba(39, 39, 39, 0.5);
+  background: #2e4e24;
+}
+
+.menu-item {
+  padding: 8px;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.menu-item a {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+.menu-item a:hover {
+  color: var(--primary-color);
+  transition: color 0.3s ease;
+  text-decoration: underline;
+}
