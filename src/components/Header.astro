@@ -1,15 +1,28 @@
 ---
+import { parse } from 'cookie';
+
 const title = Astro.props.title || "Broslunas TODO";
+
+const cookies = parse(Astro.request.headers.get('cookie') || '');
+const isLoggedIn = cookies['loggedIn'] === 'true';
 
 const menu = [
 	{
-		link: '/auth/login/',
+		link: '/login/',
 		label: 'Login',
+		hidden: isLoggedIn,
 	},
 	{
-		link: '/auth/register/',
+		link: '/register/',
 		label: 'Registro',
-	}]
+		hidden: isLoggedIn,
+	},
+	{
+		link: '/',
+		label: 'Inicio',
+		
+	}
+];
 ---
 <header>
     <div class="header-container">
@@ -19,13 +32,13 @@ const menu = [
     </div>
     <div class='menu-container'>
 		<div class='menu'>
-				{menu
-					.map((item) => (
-						<div class='menu-item'>
-							<a href={item.link}>{item.label}</a>
-						</div>
-					))
-				}
+			{menu
+				.filter((item) => !item.hidden)
+				.map((item) => (
+					<div class='menu-item'>
+						<a href={item.link}>{item.label}</a>
+					</div>
+				))}
 		</div>
 	</div>
 </header>
