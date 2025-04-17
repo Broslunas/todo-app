@@ -1,32 +1,50 @@
 ---
+export const prerender = false;
+
 import Layout from "@/layouts/Layout.astro";
+
+// Check if the user is logged in
+const cookies = Astro.request.headers.get('cookie') || '';
+const isLoggedIn = cookies.includes('loggedIn=true');
 ---
 
 <Layout title="Inicio" description="Crea tus propias listas de tareas">
   <div class="container">
     <h1 class="title">TODO</h1>
     <p class="text">Una app para poder crear tus listas, de forma ordenada.</p>
-    <div class="btns">
-        <a href="/auth/login/"> 
+    {isLoggedIn ? (
+      <div class="btns">
+        <a href="/test/"> 
           <button class="btn">
-            Iniciar sesión
+            Acceder
           </button>
         </a>
-        <a href="/auth/register/">
-          <button class="btn">
-            Registrarse
-          </button>
-        </a>
-    </div>
-    <div class="demo container">
-      <h2>¿No estás seguro?</h2>
-      <p class="text">Pruebalo antes de usarlo</p>
-      <a href="/demo/"> 
-        <button class="btn-secondary">
-          Demo
-        </button>
-      </a>
-    </div>
+      </div>
+    ) : (
+      <>
+        <div class="btns">
+          <a href="/auth/login/"> 
+            <button class="btn">
+              Iniciar sesión
+            </button>
+          </a>
+          <a href="/auth/register/">
+            <button class="btn">
+              Registrarse
+            </button>
+          </a>
+        </div>
+        <div class="demo container">
+          <h2>¿No estás seguro?</h2>
+          <p class="text">Pruebalo antes de usarlo</p>
+          <a href="/demo/"> 
+            <button class="btn-secondary">
+              Demo
+            </button>
+          </a>
+        </div>
+      </>
+    )}
   </div>
   
   <style>
