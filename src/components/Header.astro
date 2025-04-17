@@ -8,6 +8,10 @@ const isLoggedIn = cookies['loggedIn'] === 'true';
 
 const menu = [
 	{
+		link: '/',
+		label: 'Inicio',
+	},
+	{
 		link: '/login/',
 		label: 'Login',
 		hidden: isLoggedIn,
@@ -17,11 +21,6 @@ const menu = [
 		label: 'Registro',
 		hidden: isLoggedIn,
 	},
-	{
-		link: '/',
-		label: 'Inicio',
-		
-	}
 ];
 ---
 <header>
