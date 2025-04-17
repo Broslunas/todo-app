@@ -1,8 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Poetsen+One&display=swap");
 
 :root {
-  --primary-color: #2ecc71;
-  --secondary-color: #27ae60;
+  --primary-color: #0ac558;
+  --secondary-color: #0a853d;
   --background-color: #00150d;
   --text-color: #deffe4;
   --border-color: #b2d8b2;
@@ -11,7 +11,8 @@
   --success-color: #1e8449;
 }
 
-body {
+body,
+button {
   font-family: "Poetsen One", sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
@@ -23,7 +24,11 @@ h1 {
   font-weight: 900;
 }
 
-/* -------------------------- HEADER  -------------------------- */
+h2 {
+  font-weight: 800;
+}
+
+/* -------------------------- HEADER -------------------------- */
 .header-container {
   display: flex;
   align-items: center;
@@ -83,4 +88,45 @@ h1 {
   color: var(--primary-color);
   transition: color 0.3s ease;
   text-decoration: underline;
+}
+
+/* -------------------------- MAIN ELEMENTS -------------------------- */
+
+h1 {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 5rem;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 3rem;
+  text-align: center;
+  margin-top: 20px;
+}
+
+button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: solid var(--border-color) 2px;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-size: 2.5rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--secondary-color);
+  transition: background-color 0.3s ease;
+}
+
+a {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+p {
+  font-size: 1.5rem;
+  line-height: 1.5;
+  text-align: center;
 }

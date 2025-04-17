@@ -1,19 +1,14 @@
 ---
-import "@/styles/global.css";
 const title = Astro.props.title || "Broslunas TODO";
 
 const menu = [
 	{
-		link: '/login/',
+		link: '/auth/login/',
 		label: 'Login',
 	},
 	{
-		link: '/register/',
+		link: '/auth/register/',
 		label: 'Registro',
-	},
-	{
-		link: '/stats/',
-		label: 'Estadísticas',
 	}]
 ---
 <header>
@@ -23,13 +18,14 @@ const menu = [
         </a>
     </div>
     <div class='menu-container'>
-				<div class='menu'>
-					{menu
-						.map((item) => (
-							<div class='menu-item'>
-								<a href={item.link}>{item.label}</a>
-							</div>
-						))}
-				</div>
-			</div>
+		<div class='menu'>
+				{menu
+					.map((item) => (
+						<div class='menu-item'>
+							<a href={item.link}>{item.label}</a>
+						</div>
+					))
+				}
+		</div>
+	</div>
 </header>

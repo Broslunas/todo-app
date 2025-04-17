@@ -3,6 +3,51 @@ import Layout from "@/layouts/Layout.astro";
 ---
 
 <Layout title="Inicio" description="Crea tus propias listas de tareas">
-  <h1>Welcome to Astro!</h1>
-  <p>This is a simple example of an Astro page.</p>
+  <div class="container">
+    <h1 class="title">TODO</h1>
+    <p class="text">Una app para poder crear tus listas, de forma ordenada.</p>
+    <div class="btns">
+        <a href="/auth/login/"> 
+          <button class="btn">
+            Iniciar sesión
+          </button>
+        </a>
+        <a href="/auth/register/">
+          <button class="btn">
+            Registrarse
+          </button>
+        </a>
+    </div>
+    <div class="demo container">
+      <h2>¿No estás seguro?</h2>
+      <p class="text">Pruebalo antes de usarlo</p>
+      <a href="/demo/"> 
+        <button class="btn-secondary">
+          Demo
+        </button>
+      </a>
+    </div>
+  </div>
+  
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 65vh;
+      padding-top: 5rem; /* Added padding to avoid header overlap */
+    }
+
+    .text {
+      font-size: 1.5rem;
+      margin-top: 0;
+    }
+
+    .btns {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+  </style>
 </Layout>
