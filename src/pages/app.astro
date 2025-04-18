@@ -3,39 +3,133 @@ export const prerender = false;
 
 import Layout from "@/layouts/Layout.astro";
 
-// Check if the user is logged in
 const cookies = Astro.request.headers.get('cookie') || '';
-const isLoggedIn = cookies.includes('loggedIn=true');
-if (!isLoggedIn) {
+const username = cookies.match(/username=([^;]+)/)?.[1];
+if (!username) {
   return Astro.redirect('/');
 }
+
+const host = Astro.request.headers.get('host');
+const protocol = Astro.request.headers.get('x-forwarded-proto') || 'http';
+const baseUrl = `${protocol}://${host}`;
+const tasks = await fetch(`${baseUrl}/api/tasks`, {
+  headers: { username },
+}).then(res => res.json());
+
+// Asegurarse de que tasks sea un arreglo
+const taskList = Array.isArray(tasks) ? tasks : [];
 ---
 
-<Layout title="Inicio" description="Crea tus propias listas de tareas">
-  <div class="container">
-    <h1 class="title">TODO</h1>
-    <p class="text">Una app para poder crear tus listas, de forma ordenada.</p>
+<Layout title="App" description="Crea tus propias listas de tareas">
+  <div class="tasks-container">
+    <h2 class="tasks-title">Tus Tareas</h2>
+    <ul class="tasks-list">
+      {taskList.map(task => (
+        <li class="task-item" data-task-id={task._id} data-complete={task.complete}>
+          <button class="complete-button">
+            {task.complete ? "✔" : ""}
+          </button>
+          <div class="task-content">
+            <h3 class="task-title">{task.title}</h3>
+            <p class="task-description">{task.description}</p>
+            <small class="task-date">Creado el: {new Date(task.creationDate).toLocaleString()}</small>
+            {Array.isArray(task.tags) && task.tags.filter((tag: string) => tag.trim() !== "").length > 0 && (
+              <div class="task-tags">Tags: {task.tags.filter((tag: string) => tag.trim() !== "").join(", ")}</div>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
   </div>
-  
+  <div class="task-form">
+    <h2 class="form-title">Crear Nueva Tarea</h2>
+    <form id="taskForm" class="form">
+      <input name="title" type="text" placeholder="Título" class="form-input" required />
+      <textarea name="description" placeholder="Descripción (opcional)" class="form-textarea"></textarea> <!-- Actualizar el placeholder -->
+      <input name="tags" type="text" placeholder="Tags (separados por comas)" class="form-input" />
+      <button type="submit" class="form-button">Añadir Tarea</button>
+    </form>
+  </div>
+  <script>
+    async function toggleComplete(taskId: string, currentState: boolean) {
+      const response = await fetch("/api/tasks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: document.cookie.match(/username=([^;]+)/)?.[1],
+          taskId,
+          complete: !currentState, // Alternar el estado actual
+        }),
+      });
+
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        console.error("Error al actualizar el estado de la tarea.");
+      }
+    }
+
+    // Vincular eventos a los botones "Completar"
+    document.addEventListener("DOMContentLoaded", () => {
+      const completeButtons = document.querySelectorAll(".complete-button");
+      completeButtons.forEach(button => {
+        button.addEventListener("click", (event) => {
+          const taskItem = button.closest(".task-item");
+          const taskId = taskItem?.getAttribute("data-task-id");
+          const currentState = taskItem?.getAttribute("data-complete") === "true"; // Leer el estado actual
+          if (taskId) {
+            toggleComplete(taskId, currentState);
+          } else {
+            console.error("No se encontró el ID de la tarea.");
+          }
+        });
+      });
+    });
+
+    const taskForm = document.getElementById("taskForm") as HTMLFormElement; // Asegurar el tipo correcto
+    if (taskForm) {
+      taskForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(taskForm);
+        const task = {
+          title: formData.get("title") as string,
+          description: formData.get("description") as string,
+          tags: (formData.get("tags") as string)?.split(",").map((tag: string) => tag.trim()) || [], // Definir el tipo de tag
+        };
+
+        const response = await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...task, username: document.cookie.match(/username=([^;]+)/)?.[1] }),
+        });
+
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          console.error("Error al crear la tarea.");
+        }
+      });
+    } else {
+      console.error("El formulario de tareas no fue encontrado.");
+    }
+  </script>
   <style>
-    .container {
+    .complete-button {
+      width: 32px; /* Asegura un ancho fijo */
+      height: 32px; /* Asegura un alto fijo */
+      border: 2px solid #4caf50;
+      border-radius: 50%; /* Hace que el botón sea un círculo perfecto */
+      background-color: transparent;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: center;
-      height: 65vh;
-      padding-top: 5rem; /* Added padding to avoid header overlap */
+      justify-content: center;
+      font-size: 16px;
+      color: #4caf50;
+      cursor: pointer;
     }
 
-    .text {
-      font-size: 1.5rem;
-      margin-top: 0;
-    }
-
-    .btns {
-      display: flex;
-      gap: 1rem;
-      margin-top: 2rem;
+    .complete-button:empty {
+      color: transparent;
     }
   </style>
 </Layout>
