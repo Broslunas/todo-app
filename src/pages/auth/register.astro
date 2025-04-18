@@ -16,7 +16,7 @@ if (!MONGO_URI) {
 const cookies = Astro.request.headers.get('cookie') || '';
 const isLoggedIn = cookies.includes('loggedIn=true');
 if (isLoggedIn) {
-  return Astro.redirect('/');
+  return Astro.redirect('/app');
 }
 ---
 <Layout title="Regístrate" description="Crea una cuenta en Broslunas Chat para interactuar con inteligencia artificial." >
