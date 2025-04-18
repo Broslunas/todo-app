@@ -1,0 +1,41 @@
+---
+export const prerender = false;
+
+import Layout from "@/layouts/Layout.astro";
+
+// Check if the user is logged in
+const cookies = Astro.request.headers.get('cookie') || '';
+const isLoggedIn = cookies.includes('loggedIn=true');
+if (!isLoggedIn) {
+  return Astro.redirect('/');
+}
+---
+
+<Layout title="Inicio" description="Crea tus propias listas de tareas">
+  <div class="container">
+    <h1 class="title">TODO</h1>
+    <p class="text">Una app para poder crear tus listas, de forma ordenada.</p>
+  </div>
+  
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 65vh;
+      padding-top: 5rem; /* Added padding to avoid header overlap */
+    }
+
+    .text {
+      font-size: 1.5rem;
+      margin-top: 0;
+    }
+
+    .btns {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+  </style>
+</Layout>
