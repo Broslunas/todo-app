@@ -12,12 +12,17 @@ const menu = [
 		label: 'Inicio',
 	},
 	{
-		link: '/login/',
+		link: '/app',
+		label: 'App',
+		hidden: !isLoggedIn,
+	},
+	{
+		link: '/auth/login/',
 		label: 'Login',
 		hidden: isLoggedIn,
 	},
 	{
-		link: '/register/',
+		link: '/auth/register/',
 		label: 'Registro',
 		hidden: isLoggedIn,
 	},
