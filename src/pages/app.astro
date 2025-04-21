@@ -213,6 +213,15 @@ const taskList = Array.isArray(tasks) ? tasks : [];
 
       const deleteButtons = document.querySelectorAll<HTMLButtonElement>(".delete-button");
       deleteButtons.forEach(bindDeleteButton);
+
+      const moreInfoButton = document.getElementById("moreInfoButton") as HTMLButtonElement | null;
+      const extraFields = document.querySelector(".form-extra-fields") as HTMLElement | null;
+
+      if (moreInfoButton && extraFields) {
+        moreInfoButton.addEventListener("click", () => {
+          extraFields.classList.toggle("visible");
+        });
+      }
     });
 
     const taskForm = document.getElementById("taskForm") as HTMLFormElement | null;
