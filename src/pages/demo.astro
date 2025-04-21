@@ -1,0 +1,272 @@
+---
+export const prerender = false;
+
+import Layout from "@/layouts/Layout.astro";
+import '@/styles/app.css'
+
+const username = "DEMO";
+
+const host = Astro.request.headers.get('host');
+const protocol = Astro.request.headers.get('x-forwarded-proto') || 'http';
+const baseUrl = `${protocol}://${host}`;
+const tasks = await fetch(`${baseUrl}/api/tasks`, {
+  headers: { username },
+}).then(res => res.json());
+
+// Asegurarse de que tasks sea un arreglo
+const taskList = Array.isArray(tasks) ? tasks : [];
+---
+
+<Layout title="DEMO" description="Versión de prueba">
+  <div class="task-form">
+    <h2 class="form-title">Crear Nueva Tarea</h2>
+    <form id="taskForm" class="form">
+      <div class="form-row">
+        <input name="title" type="text" placeholder="Título" class="form-input" required />
+        <button type="button" id="moreInfoButton" class="form-button">+ Info</button>
+        <button type="submit" class="form-button">Añadir Tarea</button>
+      </div>
+      <div class="form-extra-fields">
+        <textarea name="description" placeholder="Descripción (opcional)" class="form-textarea"></textarea>
+        <input name="tags" type="text" placeholder="Tags (separados por comas)" class="form-input" />
+      </div>
+    </form>
+  </div>
+  <div class="tasks-container">
+    <h2 class="tasks-title">Tus Tareas</h2>
+    <ul id="tasksList" class="tasks-list">
+      {taskList.map(task => (
+        <li class="task-item" data-task-id={task._id} data-complete={task.complete}>
+          <button class="complete-button">
+            {task.complete ? "✔" : ""}
+          </button>
+          <button class="delete-button">🗑</button>
+          <div class="task-content">
+            <h3 class="task-title">{task.title}</h3>
+            <p class="task-description">{task.description}</p>
+            <small class="task-date">Creado el: {new Date(task.creationDate).toLocaleString()}</small>
+            {Array.isArray(task.tags) && task.tags.filter((tag: string) => tag.trim() !== "").length > 0 && (
+              <div class="task-tags">Tags: {task.tags.filter((tag: string) => tag.trim() !== "").join(", ")}</div>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+  <script>
+    const username = "DEMO";
+    interface Task {
+      _id: string;
+      title: string;
+      description: string;
+      complete: boolean;
+      creationDate: string;
+      tags: string[];
+    }
+
+    async function fetchTasks() {
+      const response = await fetch("/api/tasks", {
+        headers: { username: username },
+      });
+
+      if (response.ok) {
+        const tasks: Task[] = await response.json();
+        const tasksList = document.getElementById("tasksList") as HTMLElement | null;
+        if (tasksList) {
+          tasksList.innerHTML = ""; // Limpiar la lista actual
+          tasks.forEach(addTaskToDOM); // Agregar las tareas actualizadas
+        }
+      } else {
+        console.error("Error al cargar las tareas.");
+      }
+    }
+
+    async function toggleComplete(taskId: string, currentState: boolean) {
+      const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`) as HTMLElement | null;
+      if (!taskItem) {
+        console.error("No se encontró el elemento de la tarea.");
+        return;
+      }
+
+      // Actualizar el DOM inmediatamente
+      const completeButton = taskItem.querySelector(".complete-button") as HTMLButtonElement | null;
+      if (completeButton) {
+        taskItem.setAttribute("data-complete", String(!currentState));
+        completeButton.textContent = !currentState ? "✔" : "";
+      }
+
+      // Realizar la petición
+      const response = await fetch("/api/tasks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: username,
+          taskId,
+          complete: !currentState,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchTasks(); // Recargar todas las tareas
+      } else {
+        // Rollback si la petición falla
+        console.error("Error al actualizar el estado de la tarea.");
+        taskItem.setAttribute("data-complete", String(currentState));
+        if (completeButton) {
+          completeButton.textContent = currentState ? "✔" : "";
+        }
+      }
+    }
+
+    async function deleteTask(taskId: string) {
+      const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`) as HTMLElement | null;
+      if (!taskItem) {
+        console.error("No se encontró el elemento de la tarea.");
+        return;
+      }
+
+      // Eliminar del DOM inmediatamente
+      taskItem.remove();
+
+      // Realizar la petición
+      const response = await fetch("/api/tasks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: username,
+          taskId,
+        }),
+      });
+
+      if (!response.ok) {
+        // Rollback si la petición falla
+        console.error("Error al eliminar la tarea.");
+        await fetchTasks(); // Recargar todas las tareas
+      }
+    }
+
+    function bindCompleteButton(button: HTMLButtonElement) {
+      button.addEventListener("click", () => {
+        const taskItem = button.closest(".task-item") as HTMLElement | null;
+        const taskId = taskItem?.getAttribute("data-task-id");
+        const currentState = taskItem?.getAttribute("data-complete") === "true";
+        if (taskId) {
+          toggleComplete(taskId, currentState);
+        } else {
+          console.error("No se encontró el ID de la tarea.");
+        }
+      });
+    }
+
+    function bindDeleteButton(button: HTMLButtonElement) {
+      button.addEventListener("click", () => {
+        const taskItem = button.closest(".task-item") as HTMLElement | null;
+        const taskId = taskItem?.getAttribute("data-task-id");
+        if (taskId) {
+          deleteTask(taskId);
+        } else {
+          console.error("No se encontró el ID de la tarea.");
+        }
+      });
+    }
+
+    function addTaskToDOM(task: Task) {
+      const tasksList = document.getElementById("tasksList") as HTMLElement | null;
+      if (!tasksList) {
+        console.error("No se encontró la lista de tareas.");
+        return;
+      }
+
+      const newTaskItem = document.createElement("li");
+      newTaskItem.className = "task-item";
+      newTaskItem.setAttribute("data-task-id", task._id);
+      newTaskItem.setAttribute("data-complete", String(task.complete));
+      newTaskItem.innerHTML = `
+        <button class="complete-button">${task.complete ? "✔" : ""}</button>
+        <button class="delete-button">🗑</button>
+        <div class="task-content">
+          <h3 class="task-title">${task.title}</h3>
+          <p class="task-description">${task.description}</p>
+          <small class="task-date">Creado el: ${new Date(task.creationDate).toLocaleString()}</small>
+          ${task.tags.length > 0 ? `<div class="task-tags">Tags: ${task.tags.join(", ")}</div>` : ""}
+        </div>
+      `;
+      tasksList.appendChild(newTaskItem);
+
+      const completeButton = newTaskItem.querySelector(".complete-button") as HTMLButtonElement | null;
+      if (completeButton) {
+        bindCompleteButton(completeButton);
+      }
+
+      const deleteButton = newTaskItem.querySelector(".delete-button") as HTMLButtonElement | null;
+      if (deleteButton) {
+        bindDeleteButton(deleteButton);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const completeButtons = document.querySelectorAll<HTMLButtonElement>(".complete-button");
+      completeButtons.forEach(bindCompleteButton);
+
+      const deleteButtons = document.querySelectorAll<HTMLButtonElement>(".delete-button");
+      deleteButtons.forEach(bindDeleteButton);
+    });
+
+    const taskForm = document.getElementById("taskForm") as HTMLFormElement | null;
+    if (taskForm) {
+      taskForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(taskForm);
+        const task: Partial<Task> = {
+          title: formData.get("title") as string,
+          description: formData.get("description") as string,
+          tags: (formData.get("tags") as string || "").split(",").map(tag => tag.trim()).filter(tag => tag),
+        };
+
+        // Crear una tarea temporal en el DOM
+        const tempTask: Task = {
+          _id: `temp-${Date.now()}`,
+          title: task.title || "",
+          description: task.description || "",
+          complete: false,
+          creationDate: new Date().toISOString(),
+          tags: task.tags || [],
+        };
+        addTaskToDOM(tempTask);
+
+        const response = await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...task, username: username }),
+        });
+
+        if (response.ok) {
+          await fetchTasks(); // Recargar todas las tareas
+        } else {
+          // Rollback si la petición falla
+          console.error("Error al crear la tarea.");
+          const tempTaskItem = document.querySelector(`.task-item[data-task-id="${tempTask._id}"]`) as HTMLElement | null;
+          if (tempTaskItem) {
+            tempTaskItem.remove();
+          }
+        }
+
+        taskForm.reset();
+      });
+    } else {
+      console.error("El formulario de tareas no fue encontrado.");
+    }
+    
+    document.addEventListener("DOMContentLoaded", () => {
+      const moreInfoButton = document.getElementById("moreInfoButton");
+      const extraFields = document.querySelector(".form-extra-fields");
+
+      if (moreInfoButton && extraFields) {
+        moreInfoButton.addEventListener("click", () => {
+          extraFields.classList.add("visible");
+          moreInfoButton.style.display = "none"; // Hide the button after clicking
+        });
+      }
+    });
+  </script>
+</Layout>
