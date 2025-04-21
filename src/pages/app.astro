@@ -21,6 +21,15 @@ const taskList = Array.isArray(tasks) ? tasks : [];
 ---
 
 <Layout title="App" description="Crea tus propias listas de tareas">
+  <div class="task-form">
+    <h2 class="form-title">Crear Nueva Tarea</h2>
+    <form id="taskForm" class="form">
+      <input name="title" type="text" placeholder="Título" class="form-input" required />
+      <textarea name="description" placeholder="Descripción (opcional)" class="form-textarea"></textarea> <!-- Actualizar el placeholder -->
+      <input name="tags" type="text" placeholder="Tags (separados por comas)" class="form-input" />
+      <button type="submit" class="form-button">Añadir Tarea</button>
+    </form>
+  </div>
   <div class="tasks-container">
     <h2 class="tasks-title">Tus Tareas</h2>
     <ul id="tasksList" class="tasks-list">
@@ -29,6 +38,7 @@ const taskList = Array.isArray(tasks) ? tasks : [];
           <button class="complete-button">
             {task.complete ? "✔" : ""}
           </button>
+          <button class="delete-button">🗑</button>
           <div class="task-content">
             <h3 class="task-title">{task.title}</h3>
             <p class="task-description">{task.description}</p>
@@ -40,15 +50,6 @@ const taskList = Array.isArray(tasks) ? tasks : [];
         </li>
       ))}
     </ul>
-  </div>
-  <div class="task-form">
-    <h2 class="form-title">Crear Nueva Tarea</h2>
-    <form id="taskForm" class="form">
-      <input name="title" type="text" placeholder="Título" class="form-input" required />
-      <textarea name="description" placeholder="Descripción (opcional)" class="form-textarea"></textarea> <!-- Actualizar el placeholder -->
-      <input name="tags" type="text" placeholder="Tags (separados por comas)" class="form-input" />
-      <button type="submit" class="form-button">Añadir Tarea</button>
-    </form>
   </div>
   <script>
     interface Task {
@@ -114,6 +115,33 @@ const taskList = Array.isArray(tasks) ? tasks : [];
       }
     }
 
+    async function deleteTask(taskId: string) {
+      const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`) as HTMLElement | null;
+      if (!taskItem) {
+        console.error("No se encontró el elemento de la tarea.");
+        return;
+      }
+
+      // Eliminar del DOM inmediatamente
+      taskItem.remove();
+
+      // Realizar la petición
+      const response = await fetch("/api/tasks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: document.cookie.match(/username=([^;]+)/)?.[1],
+          taskId,
+        }),
+      });
+
+      if (!response.ok) {
+        // Rollback si la petición falla
+        console.error("Error al eliminar la tarea.");
+        await fetchTasks(); // Recargar todas las tareas
+      }
+    }
+
     function bindCompleteButton(button: HTMLButtonElement) {
       button.addEventListener("click", () => {
         const taskItem = button.closest(".task-item") as HTMLElement | null;
@@ -121,6 +149,18 @@ const taskList = Array.isArray(tasks) ? tasks : [];
         const currentState = taskItem?.getAttribute("data-complete") === "true";
         if (taskId) {
           toggleComplete(taskId, currentState);
+        } else {
+          console.error("No se encontró el ID de la tarea.");
+        }
+      });
+    }
+
+    function bindDeleteButton(button: HTMLButtonElement) {
+      button.addEventListener("click", () => {
+        const taskItem = button.closest(".task-item") as HTMLElement | null;
+        const taskId = taskItem?.getAttribute("data-task-id");
+        if (taskId) {
+          deleteTask(taskId);
         } else {
           console.error("No se encontró el ID de la tarea.");
         }
@@ -140,6 +180,7 @@ const taskList = Array.isArray(tasks) ? tasks : [];
       newTaskItem.setAttribute("data-complete", String(task.complete));
       newTaskItem.innerHTML = `
         <button class="complete-button">${task.complete ? "✔" : ""}</button>
+        <button class="delete-button">🗑</button>
         <div class="task-content">
           <h3 class="task-title">${task.title}</h3>
           <p class="task-description">${task.description}</p>
@@ -153,11 +194,19 @@ const taskList = Array.isArray(tasks) ? tasks : [];
       if (completeButton) {
         bindCompleteButton(completeButton);
       }
+
+      const deleteButton = newTaskItem.querySelector(".delete-button") as HTMLButtonElement | null;
+      if (deleteButton) {
+        bindDeleteButton(deleteButton);
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       const completeButtons = document.querySelectorAll<HTMLButtonElement>(".complete-button");
       completeButtons.forEach(bindCompleteButton);
+
+      const deleteButtons = document.querySelectorAll<HTMLButtonElement>(".delete-button");
+      deleteButtons.forEach(bindDeleteButton);
     });
 
     const taskForm = document.getElementById("taskForm") as HTMLFormElement | null;
@@ -206,22 +255,23 @@ const taskList = Array.isArray(tasks) ? tasks : [];
     }
   </script>
   <style>
-    .complete-button {
-      width: 32px; /* Asegura un ancho fijo */
-      height: 32px; /* Asegura un alto fijo */
-      border: 2px solid #4caf50;
-      border-radius: 50%; /* Hace que el botón sea un círculo perfecto */
-      background-color: transparent;
+    .delete-button {
+      width: 50px; /* Reducir el tamaño del botón */
+      height: 50px; /* Reducir el tamaño del botón */
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
-      color: #4caf50;
+      font-size: 32px; /* Reducir el tamaño del icono */
       cursor: pointer;
+      position: absolute; /* Posicionar el botón */
+      right: 8px; /* Alinear a la derecha */
+      top: 50%; /* Centrar verticalmente */
+      transform: translateY(-50%); /* Ajustar el centrado vertical */
     }
 
-    .complete-button:empty {
-      color: transparent;
+    .task-item {
+      position: relative; /* Necesario para posicionar el botón de eliminar */
+      padding-right: 40px; /* Asegurar espacio para el botón de eliminar */
     }
   </style>
 </Layout>

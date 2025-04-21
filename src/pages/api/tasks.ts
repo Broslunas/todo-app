@@ -140,8 +140,51 @@ export async function PATCH({ request }: { request: Request }) {
   }
 }
 
+export async function DELETE({ request }: { request: Request }) {
+  try {
+    const { username, taskId } = await request.json();
+
+    if (!username || !taskId) {
+      return new Response(
+        JSON.stringify({ response: "Faltan campos obligatorios." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    await client.connect();
+    const db = client.db("broslunas");
+    const collectionName = `${username}-list`;
+    const tasksCollection = db.collection(collectionName);
+
+    const result = await tasksCollection.deleteOne({
+      _id: new ObjectId(taskId),
+    });
+
+    if (result.deletedCount > 0) {
+      return new Response(
+        JSON.stringify({ response: "Tarea eliminada con éxito." }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ response: "No se encontró la tarea." }),
+      { status: 404, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Error al eliminar la tarea:", error);
+    return new Response(
+      JSON.stringify({ response: "Error interno del servidor." }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  } finally {
+    await client.close();
+  }
+}
+
 export default {
   POST,
   GET,
   PATCH,
+  DELETE,
 };
