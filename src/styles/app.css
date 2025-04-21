@@ -1,0 +1,77 @@
+.delete-button {
+  width: 50px; /* Reducir el tamaño del botón */
+  height: 50px; /* Reducir el tamaño del botón */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px; /* Reducir el tamaño del icono */
+  cursor: pointer;
+  position: absolute; /* Posicionar el botón */
+  right: 8px; /* Alinear a la derecha */
+  top: 50%; /* Centrar verticalmente */
+  transform: translateY(-50%); /* Ajustar el centrado vertical */
+}
+
+.task-item {
+  position: relative; /* Necesario para posicionar el botón de eliminar */
+  padding-right: 40px; /* Asegurar espacio para el botón de eliminar */
+}
+
+.form.compact .form-extra-fields {
+  display: none;
+}
+
+.form.compact ~ .form-extra-fields,
+.form.compact .form-extra-fields:focus-within {
+  display: block;
+}
+
+.form-extra-fields {
+  margin-top: 10px;
+}
+
+.form-textarea,
+.form-input {
+  width: 100%;
+  margin-bottom: 0px;
+}
+
+.form-button {
+  display: block;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the buttons relative to the input */
+  gap: 10px;
+}
+
+.form-input {
+  flex: 1;
+}
+
+.form-extra-fields {
+  display: none;
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.form-extra-fields.visible {
+  display: flex;
+}
+
+.form-textarea {
+  flex: 1;
+}
+
+.form-button {
+  padding: 5px 10px;
+}
