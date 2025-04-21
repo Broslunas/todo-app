@@ -180,7 +180,8 @@ p {
 
 .task-description {
   font-size: 0.9rem;
-  margin: 10px 0;
+  line-height: 0;
+  text-align: start;
 }
 
 .task-date {
